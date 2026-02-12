@@ -108,4 +108,12 @@ docker exec -it photo-blog-minio mc policy set download myminio/photos
 - 适配了 NAS 自建环境下的图片加载安全策略。
 - 优化了本地自建环境下的文件系统兼容性。
 
+### 🤖 AI 辅助开发
+
+本项目在改造过程中得到了 **Google Gemini (Antigravity)** 的深度支持，包括：
+
+- 自动化故障排查与 Docker 镜像构建逻辑修复。
+- 复杂存储策略与网络安全配置的适配建议。
+- 完整的工程化重构与文档编写。
+
 如果你觉得这个 NAS 专用版对你有帮助，欢迎给原作者和本分支点个 Star！
