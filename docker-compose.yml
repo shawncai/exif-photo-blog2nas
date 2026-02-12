@@ -1,0 +1,54 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        # 强制在构建阶段注入存储偏好，防止它默认去用 Vercel
+        - NEXT_PUBLIC_STORAGE_PREFERENCE=minio
+        - NEXT_PUBLIC_MINIO_BUCKET=${NEXT_PUBLIC_MINIO_BUCKET:-photos}
+        - NEXT_PUBLIC_MINIO_DOMAIN=${NEXT_PUBLIC_MINIO_DOMAIN}
+        - NEXT_PUBLIC_MINIO_PORT=${NEXT_PUBLIC_MINIO_PORT:-9000}
+        - NEXT_PUBLIC_MINIO_DISABLE_SSL=${NEXT_PUBLIC_MINIO_DISABLE_SSL:-1}
+    container_name: photo-blog-app
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      # These override .env.local variables to ensure container-to-container networking
+      - POSTGRES_URL=postgres://photo_user:photo_pass@db:5432/photo_db
+      - DISABLE_POSTGRES_SSL=1
+      - AUTH_TRUST_HOST=true
+    depends_on:
+      - db
+      - minio
+
+  db:
+    image: postgres:15-alpine
+    container_name: photo-blog-db
+    restart: always
+    environment:
+      - POSTGRES_USER=photo_user
+      - POSTGRES_PASSWORD=photo_pass
+      - POSTGRES_DB=photo_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio
+    container_name: photo-blog-minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-admin}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_ACCESS_KEY:-password123}
+    volumes:
+      - miniodata:/data
+    command: server /data --console-address ":9001"
+
+volumes:
+  pgdata:
+  miniodata:
